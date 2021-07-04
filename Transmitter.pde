@@ -11,6 +11,10 @@ public abstract class Transmitter {
         this.location = new PVector(x, y);
     }; 
 
+    protected PVector getLocation(){
+        return this.location;
+    }
+
     protected void display() {
         pushMatrix(); // Push the current transformation matrix into the matrix stack.
         translate(location.x, location.y);

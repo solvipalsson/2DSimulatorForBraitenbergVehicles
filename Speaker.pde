@@ -4,6 +4,6 @@ public class Speaker extends Transmitter{
     Speaker(float x, float y, float decibel){
         setLocation(x, y);
         setColor(0, 0, 255);
-        this.dB = dB;
+        this.dB = decibel;
     }
 }
