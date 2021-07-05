@@ -5,6 +5,22 @@ public abstract class EnvironmentMap {
     int cols, rows;
     color col;
 
+    protected void setResolution(int rs){
+        this.resolution = rs;
+    }
+
+    protected int getResolution(){
+        return this.resolution;
+    }
+
+    protected int getCols(){
+        return this.cols;
+    }
+
+    protected int getRows(){
+        return this.rows;
+    }
+
     protected void setColsRows(){
         this.cols = width / this.resolution;
         this.rows = height / this.resolution;
@@ -16,6 +32,10 @@ public abstract class EnvironmentMap {
 
     protected void init(){
         this.field = new float[this.cols][this.rows];
+    }
+
+    protected float getFromField(int col, int row){
+        return field[col][row];
     }
 
     protected abstract void display();

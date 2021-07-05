@@ -25,7 +25,7 @@ public class HeatMap extends EnvironmentMap {
                 {
                     yVal = resolution*j;
                     PVector tileLocation = new PVector(xVal, yVal);
-                    float d = heaterLocation.dist(tileLocation) / 200;
+                    float d = heaterLocation.dist(tileLocation) / 70;
                     if (d < 1)
                     {
                         d=1;
@@ -49,7 +49,7 @@ public class HeatMap extends EnvironmentMap {
     //Renders a vector object 'v' as an arrow and a position 'x,y'
     void drawTile(float temperature, float x, float y) {
         pushMatrix();
-        float gray = map(temperature, 0, 2000, 0, 255);
+        float gray = map(temperature, 0, 1000, 0, 255);
         float b = map(temperature, 0, 1000, 0, 30);
         fill(gray, b, b);
         rect(x, y, resolution, resolution);

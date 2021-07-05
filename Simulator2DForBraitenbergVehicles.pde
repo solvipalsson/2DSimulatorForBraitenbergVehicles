@@ -3,9 +3,11 @@
 public ArrayList<Heater> heaters;
 public ArrayList<Lighter> lighters;
 public ArrayList<Speaker> speakers;
+public ArrayList<Vehicle> vehicles;
 public HeatMap heatMap;
 public LightMap lightMap;
 public SoundMap soundMap;
+PVector mouse;
 
 
 void setup() {
@@ -14,9 +16,10 @@ void setup() {
 
 
     heaters = new ArrayList<Heater>();
-    Heater h1 = new Heater(500.0, 500.0, 1000.0);
+    Heater h1 = new Heater(500.0, 500.0, 600.0);
     heaters.add(h1);
-
+    Heater h2 = new Heater(100.0, 100.0, 300.0);
+    heaters.add(h2);
 
     lighters = new ArrayList<Lighter>();
     Lighter l1 = new Lighter(300.0, 200.0, 500.0);
@@ -34,15 +37,24 @@ void setup() {
 
     soundMap = new SoundMap(speakers, 10);
     soundMap.produce();
+    
 
+    vehicles = new ArrayList<Vehicle>();
+    Vehicle v1 = new Vehicle(200.0, 500.0);
+    TemperatureSensor ts1 = new TemperatureSensor(1.0, 0.0, "right");
+    v1.addTemperatureSensor(ts1);
+    TemperatureSensor ts2 = new TemperatureSensor(0.0, 1.0, "left");
+    v1.addTemperatureSensor(ts2);
+
+    vehicles.add(v1);
 }
 
 void draw() {
     background(255);
 
-    //heatMap.display();
+    heatMap.display();
     //lightMap.display();
-    soundMap.display();
+    //soundMap.display();
 
     for (Heater h : heaters){
         h.display();
@@ -56,6 +68,12 @@ void draw() {
         s.display();
     }
 
-    
+    // mouse = new PVector(mouseX, mouseY);
+    // ellipse(mouse.x, mouse.y, 24, 24);
+
+    for (Vehicle v : vehicles){
+        v.steer(heatMap);
+        v.display();
+    }
     
 }
