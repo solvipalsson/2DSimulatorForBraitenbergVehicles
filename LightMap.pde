@@ -24,7 +24,7 @@ public class LightMap extends EnvironmentMap {
                 {
                     yVal = resolution*j;
                     PVector tileLocation = new PVector(xVal, yVal);
-                    float d = lighterLocation.dist(tileLocation) / 200;
+                    float d = lighterLocation.dist(tileLocation) / 20;
                     if (d < 1)
                     {
                         d=1;

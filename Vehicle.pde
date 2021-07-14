@@ -9,26 +9,37 @@ public class Vehicle {
     float maximumForce;
     int size; 
     ArrayList<TemperatureSensor> tempSensors;
-    
+    ArrayList<LightSensor> lightSensors;
+    ArrayList<SoundSensor> soundSensors;
     
 
     
     Vehicle(float x, float y){
         setSize(20);
-        setMaximumSpeed(2.0);
-        setMaximumForce(20.0);
+        setMaximumSpeed(5.0);
+        setMaximumForce(0.1);
         setLeftMotor(0.0);
         setRightMotor(0.0);
         setInitialVelocity(new PVector(0.0, 0.0));
         setInitialAcceleration(new PVector(0.0, 0.0));
         setLocation(x, y);
         tempSensors = new ArrayList<TemperatureSensor>();
+        lightSensors = new ArrayList<LightSensor>();
+        soundSensors = new ArrayList<SoundSensor>();
     }
 
 
 
     private void addTemperatureSensor(TemperatureSensor ts){
         this.tempSensors.add(ts);
+    }
+
+    private void addLightSensor(LightSensor ls){
+        this.lightSensors.add(ls);
+    }
+
+    private void addSoundSensor(SoundSensor ss){
+        this.soundSensors.add(ss);
     }
 
     private void readTemperatureSensors(HeatMap hm){
@@ -41,34 +52,56 @@ public class Vehicle {
         }
     }
 
+    private void readLightSensors(LightMap lm){
+        float value = 0.0;
+        for (LightSensor ls : lightSensors){
+            value = ls.readEnvironmentMap(lm, this.location, this.velocity);
+            updateLeftMotor(ls.getLeftEfficiency() * value);
+            updateRightMotor(ls.getRightEfficiency() * value);
+            value = 0.0;
+        }
+    }
+
+    private void readSoundSensors(SoundMap sm){
+        float value = 0.0;
+        for (SoundSensor ss : soundSensors){
+            value = ss.readEnvironmentMap(sm, this.location, this.velocity);
+            updateLeftMotor(ss.getLeftEfficiency() * value);
+            updateRightMotor(ss.getRightEfficiency() * value);
+            value = 0.0;
+        }
+    }
+
+
+
 
     public PVector generateTargetFromMotors()
     {
         float rm = this.rightMotor;
         float lm = this.leftMotor;
 
-        if (lm == rm){
-            return new PVector(100, 100);
+
+        if (rm < 0.0){
+            rm = 0.0;
         }
-
-        float radiusToCenter = (this.size / 2) * (lm + rm) / (lm - rm);
-
+        if (lm < 0.0){
+            lm = 0.0;
+        }
+        float degreesToTurn = 0.0;
         float d = lm + rm ;
 
-        // float ratio = 0;
-        // if (lm > rm){
-        //     ratio = 1 - rm / lm; 
-        // } else if (lm < rm){
-        //     ratio = 1 - lm / rm
-        // }
+        if (lm != rm){
+            float radiusToCenter = (this.size / 2) * (lm + rm) / (lm - rm);
+            degreesToTurn = (20.0 * 360.0) / (2.0 * (float)Math.PI * radiusToCenter);
 
-        float degreesToTurn = (20.0 * 360.0) / (2.0 * (float)Math.PI * radiusToCenter);
-
-        if (degreesToTurn > 60.0){
-            degreesToTurn = 60.0;
-        } else if ( degreesToTurn < -60.0) {
-            degreesToTurn = -60.0;
+            if (degreesToTurn > 60.0){
+                degreesToTurn = 60.0;
+            } else if ( degreesToTurn < -60.0) {
+                degreesToTurn = -60.0;
+            }
         }
+
+        
 
         float angle = (degreesToTurn * PI/180);
         float newX = (d/2) * cos(angle);
@@ -137,15 +170,19 @@ public class Vehicle {
         this.rightMotor = 0.0;
     }
 
-    private void steer(HeatMap hm){
-        readTemperatureSensors(hm);
-        println(this.leftMotor);
-        println(this.rightMotor);
+    private void steer(HeatMap hm, LightMap lm, SoundMap sm){
+        readSensors(hm, lm, sm);
         PVector target = calculateTargetVector();
         PVector desiredVelocity = calculateDesiredVelocity(target);
         PVector steeringForce = calculateSteeringForce(desiredVelocity);
         applyForce(steeringForce);
         update();
+    }
+
+    private void readSensors(HeatMap hm, LightMap lm, SoundMap sm){
+        readTemperatureSensors(hm);
+        readLightSensors(lm);
+        readSoundSensors(sm);
     }
 
 

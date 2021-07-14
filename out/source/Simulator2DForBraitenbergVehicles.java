@@ -3,6 +3,8 @@ import processing.data.*;
 import processing.event.*; 
 import processing.opengl.*; 
 
+import static javax.swing.JOptionPane.*; 
+
 import java.util.HashMap; 
 import java.util.ArrayList; 
 import java.io.File; 
@@ -24,75 +26,340 @@ public HeatMap heatMap;
 public LightMap lightMap;
 public SoundMap soundMap;
 PVector mouse;
+boolean showIUI;
+
+int envMap = 0;
 
 
 public void setup() {
     
     
-
-
-    heaters = new ArrayList<Heater>();
-    Heater h1 = new Heater(500.0f, 500.0f, 600.0f);
-    heaters.add(h1);
-    Heater h2 = new Heater(100.0f, 100.0f, 300.0f);
-    heaters.add(h2);
-
-    lighters = new ArrayList<Lighter>();
-    Lighter l1 = new Lighter(300.0f, 200.0f, 500.0f);
-    lighters.add(l1);
-
-    speakers = new ArrayList<Speaker>();
-    Speaker s1 = new Speaker(800.0f, 700.0f, 500.0f);
-    speakers.add(s1);
-
-    heatMap = new HeatMap(heaters, 10);
-    heatMap.produce();
-
-    lightMap = new LightMap(lighters, 10);
-    lightMap.produce();
-
-    soundMap = new SoundMap(speakers, 10);
-    soundMap.produce();
     
-
+    showIUI = true;
+    heaters = new ArrayList<Heater>();
+    lighters = new ArrayList<Lighter>();
+    speakers = new ArrayList<Speaker>();
     vehicles = new ArrayList<Vehicle>();
-    Vehicle v1 = new Vehicle(200.0f, 500.0f);
-    TemperatureSensor ts1 = new TemperatureSensor(1.0f, 0.0f, "right");
-    v1.addTemperatureSensor(ts1);
-    TemperatureSensor ts2 = new TemperatureSensor(0.0f, 1.0f, "left");
-    v1.addTemperatureSensor(ts2);
-
-    vehicles.add(v1);
 }
 
 public void draw() {
     background(255);
-
-    heatMap.display();
-    //lightMap.display();
-    //soundMap.display();
-
-    for (Heater h : heaters){
+    
+    while(showIUI) {
+        startIUI();
+        showIUI = false;
+    }
+    
+    displayEnvironmentMap();
+    
+    for (Heater h : heaters) {
         h.display();
     }
-
-    for (Lighter l : lighters){
+    
+    for (Lighter l : lighters) {
         l.display();
     }
-
-    for (Speaker s : speakers){
+    
+    for (Speaker s : speakers) {
         s.display();
     }
-
-    // mouse = new PVector(mouseX, mouseY);
-    // ellipse(mouse.x, mouse.y, 24, 24);
-
-    for (Vehicle v : vehicles){
-        v.steer(heatMap);
+    
+    
+    for (Vehicle v : vehicles) {
+        v.steer(heatMap, lightMap, soundMap);
         v.display();
     }
     
 }
+
+private void startIUI() {
+    int sOr = qStudentOrResearcher();
+    //Student is 0 and REsearcher is 1
+    if (sOr == 0) {
+        //Automatic world is 0 and customized world is 1
+        int cw = qCustomizeWorld();
+        
+        if (cw == 0) {
+            buildAutomaticWorld();
+
+        }
+        
+        else if (cw == 1) {
+            startEnvironmentBuilder();
+            startVehicleBuilder();
+        }
+    }
+    
+    else if (sOr == 1) {
+        startEnvironmentBuilder();
+        startVehicleBuilder();
+    }
+    
+}
+
+
+private void displayEnvironmentMap() {
+    switch(envMap) {
+        case 0:
+            break;
+        case 1:
+            heatMap.display();
+            break;
+        case 2:
+            lightMap.display();
+            break;
+        case 3:
+            soundMap.display();
+            break;
+    } 
+}
+
+private int qCustomizeWorld() {
+    Object[] options = {"No - Build it for me",
+        "Yes"};
+    int n = getOptionFromUser(options, "Would you like to customize the simulator?", "Automated or custom world");
+    
+    return n;
+}
+
+private int qStudentOrResearcher() {
+    Object[] options = {"Student", "Researcher"};
+    int n =  getOptionFromUser(options, "Are you a student or a researcher", "User type");
+    
+    return n;
+}
+
+
+
+private void buildAutomaticWorld() {
+    // Heaters
+    Heater h1 = new Heater(500.0f, 500.0f, 800.0f);
+    heaters.add(h1);
+    Heater h2 = new Heater(700.0f, 700.0f, 500.0f);
+    heaters.add(h2);
+
+    heatMap = new HeatMap(heaters, 10);
+    heatMap.produce();
+    envMap = 1;
+    // V1
+    Vehicle v1 = new Vehicle(100.0f, 500.0f);
+    TemperatureSensor ts0 = new TemperatureSensor(1.0f, 1.0f, "right");
+    v1.addTemperatureSensor(ts0);
+    vehicles.add(v1);
+
+    //V2a
+    Vehicle v2a = new Vehicle(200.0f, 300.0f);
+    TemperatureSensor ts1 = new TemperatureSensor(1.0f, 0.0f, "left");
+    v2a.addTemperatureSensor(ts1);
+    TemperatureSensor ts2 = new TemperatureSensor(0.0f, 1.0f, "right");
+    v2a.addTemperatureSensor(ts2);
+    vehicles.add(v2a);
+
+    //V2b
+    Vehicle v2b = new Vehicle(300.0f, 400.0f);
+    TemperatureSensor ts3 = new TemperatureSensor(1.0f, 0.0f, "right");
+    v2b.addTemperatureSensor(ts3);
+    TemperatureSensor ts4 = new TemperatureSensor(0.0f, 1.0f, "left");
+    v2b.addTemperatureSensor(ts4);
+    vehicles.add(v2b);
+
+    //V2c 
+    Vehicle v2c = new Vehicle(400.0f, 500.0f);
+    TemperatureSensor ts5 = new TemperatureSensor(1.0f, 1.0f, "right");
+    v2c.addTemperatureSensor(ts5);
+    TemperatureSensor ts6 = new TemperatureSensor(1.0f, 1.0f, "left");
+    v2c.addTemperatureSensor(ts6);
+    vehicles.add(v2c);
+
+    //V3a
+    Vehicle v3a = new Vehicle(500.0f, 600.0f);
+    TemperatureSensor ts7 = new TemperatureSensor(0.0f, -1.0f, "right");
+    v3a.addTemperatureSensor(ts7);
+    TemperatureSensor ts8 = new TemperatureSensor(-1.0f, 0.0f, "left");
+    v3a.addTemperatureSensor(ts8);
+    vehicles.add(v3a);
+
+    //V3b
+    Vehicle v3b = new Vehicle(600.0f, 700.0f);
+    TemperatureSensor ts9 = new TemperatureSensor(-1.0f, 0.0f, "right");
+    v3b.addTemperatureSensor(ts9);
+    TemperatureSensor ts10 = new TemperatureSensor(0.0f, -1.0f, "left");
+    v3b.addTemperatureSensor(ts10);
+    vehicles.add(v3b);
+
+    // //V3c
+    // Vehicle v3a = new Vehicle(500.0, 600.0);
+    // TemperatureSensor ts7 = new TemperatureSensor(0.0, -1.0, "right");
+    // v1.addTemperatureSensor(ts7);
+    // TemperatureSensor ts8 = new TemperatureSensor(-1.0, 0.0, "left");
+    // v1.addTemperatureSensor(ts8);
+    // vehicles.add(v3a);
+}
+
+private void startEnvironmentBuilder() { 
+    setTransmitters();
+    produceEnvironmentMaps();
+    setFriction();
+    chooseEnvironmentMap();
+}
+
+private void produceEnvironmentMaps() {
+    heatMap = new HeatMap(heaters, 10);
+    heatMap.produce();
+    
+    lightMap = new LightMap(lighters, 10);
+    lightMap.produce();
+    
+    soundMap = new SoundMap(speakers, 10);
+    soundMap.produce();
+}
+
+private void setTransmitters() {
+    Object[] options = {"Heater", "Light", "Speaker"};
+    Object[] options1 = {"Yes", "No"};
+    while(true) {
+        //Heater = 0, Light = 1, Speaker = 2
+        int type = getOptionFromUser(options, "Please choose the type of transmitter", "Type of Transmitter");
+        float xCoord = getFloatFromInput("Please insert the x coordinate of the transmitter", 0.0f, width);
+        float yCoord = getFloatFromInput("Please insert the y coordinate of the transmitter", 0.0f, height);
+        
+        switch(type) {
+            case 0:
+                float kelvin = getFloatFromInput("Please type in the strength in Kelvin between 0.0 and 1000.0", 0.0f, 1000.0f);
+                heaters.add(new Heater(xCoord, yCoord, kelvin));
+                break;
+            case 1:
+                float lux = getFloatFromInput("Please type in the strenght in Lux between 0.0 and 2000.0", 0.0f, 2000.0f);
+                lighters.add(new Lighter(xCoord, yCoord, lux));
+                break;
+            case 2:
+                float dB = getFloatFromInput("Please type in the strength in decibel bewteen 0.0 and 150.0", 0.0f, 150.0f);
+                speakers.add(new Speaker(xCoord, yCoord, dB));
+                break;
+        }
+        
+        int cont = getOptionFromUser(options1, "Would you like to insert another transmitter?", "Another transmitter");
+        if (cont == 0) {
+            continue;
+        } 
+        else if (cont == 1) {
+            break;
+        }
+    } 
+}
+
+
+private void setFriction() {
+    float friction = getFloatFromInput("Please input a constant for the friction of the system between 0.0 and 1.0", 0.0f, 1.0f);
+}
+
+private void chooseEnvironmentMap() {
+    Object[] options = {"No Map", "HeatMap", "LightMap", "SoundMap"};
+    envMap = getOptionFromUser(options, "Please choose an environment map that you would like to see displayed", "Environment Map");
+}
+
+
+private void startVehicleBuilder() {
+    float xCoord = getFloatFromInput("Please insert the initial x coordinate of the vehicle", 0.0f, width);
+    float yCoord = getFloatFromInput("Please insert the y coordinate of the vehicle", 0.0f, height);
+    Vehicle v = new Vehicle(xCoord, yCoord);
+    setSensor(v);
+    
+    vehicles.add(v);
+}
+
+
+private void setSensor(Vehicle v_) {
+    Object[] typeOptions = {"Temperature Sensor", "Light Sensor", "Sound Sensor"};
+    Object[] sideOptions = {"Left", "Right"};
+    Object[] optionsYN = {"Yes", "No"};
+    while(true) {
+        //Heater = 0, Light = 1, Speaker = 2
+        int type = getOptionFromUser(typeOptions, "Please choose the type of Sensor", "Type of Sensor");
+        String mountedSide = mountedSideToString(getOptionFromUser(sideOptions, "Please choose which side of the vehicle the sensor should be mounted on", "Mounted Side"));
+        float leftMotor = getFloatFromInput("Please wire the sensor to the left motor of the vehicle with a float between -1.0 and 1.0", -1.0f, 1.0f);
+        float rightMotor = getFloatFromInput("Please wire the sensor to the right motor of the vehicle with a float between -1.0 and 1.0", -1.0f, 1.0f);
+        
+        
+        switch(type) {
+            case 0:
+                TemperatureSensor ts = new TemperatureSensor(leftMotor, rightMotor, mountedSide);
+                v_.addTemperatureSensor(ts);
+                break;
+            case 1:
+                LightSensor ls = new LightSensor(leftMotor, rightMotor, mountedSide);
+                v_.addLightSensor(ls);
+                break;
+            case 2:
+                SoundSensor ss = new SoundSensor(leftMotor, rightMotor, mountedSide);
+                v_.addSoundSensor(ss);
+                break;
+        };
+        
+        int cont = getOptionFromUser(optionsYN, "Would you like to insert another Sensor?", "Another Sensor Option");
+        if (cont == 0) {
+            continue;
+        } 
+        else if (cont == 1) {
+            break;
+        }
+    } 
+}
+
+private String mountedSideToString(int ms) {
+    switch(ms) {
+        case 0:
+            return "left";
+        case 1:
+            return "right";
+        default:
+            return "left";
+    }
+}
+
+private float getFloatFromInput(String question, float lowerLimit, float upperLimit) {
+    while(true) {
+        try {
+            String answer = showInputDialog(question);
+            if (answer == null) {
+                Object[]options = {"Yes", "No"};
+                int n = getOptionFromUser(options, "You are about to terminate the program and all progress will be lost, are you sure", "Confirm Termination");
+                if (n ==  0) {
+                    System.exit(1);
+                } else{
+                    continue;
+                }
+            }
+            
+            float f = Float.parseFloat(answer);
+            
+            if (f < lowerLimit || f > upperLimit) {
+                throw new ArithmeticException(String.format("The input is invalid, it must be a float (0.00) between %.2f and %.2f", lowerLimit, upperLimit));
+            }
+            
+            return f;
+        }
+        catch(Exception e) {
+            System.out.println(e);
+            showMessageDialog(null, String.format("The input is invalid, it must be a float (0.00) between %.2f and %.2f", lowerLimit, upperLimit));
+            continue;
+        }
+    }   
+}
+
+private int getOptionFromUser(Object[] options, String question, String header) {    
+    int n = showOptionDialog(frame,
+        question,
+        header,
+        DEFAULT_OPTION,
+        QUESTION_MESSAGE,
+        null,   //donot use a custom Icon
+        options,//the titles of buttons
+        options[0]);//default button title
+    
+    return n;
+}
+
 
 public abstract class EnvironmentMap {
     int resolution;
@@ -231,7 +498,7 @@ public class LightMap extends EnvironmentMap {
                 {
                     yVal = resolution*j;
                     PVector tileLocation = new PVector(xVal, yVal);
-                    float d = lighterLocation.dist(tileLocation) / 200;
+                    float d = lighterLocation.dist(tileLocation) / 20;
                     if (d < 1)
                     {
                         d=1;
@@ -260,6 +527,27 @@ public class LightMap extends EnvironmentMap {
         fill(b, gray, b);
         rect(x, y, resolution, resolution);
         popMatrix();
+    }
+}
+
+
+public class LightSensor extends Sensor{
+
+
+    LightSensor(float leftEff, float rightEff, String mountS){
+        setLeftEfficiency(leftEff);
+        setRightEfficiency(rightEff);
+        setMountedSide(mountS);
+        setOffset();
+    }
+
+    private float readEnvironmentMap(LightMap lm, PVector location, PVector velocity){
+        PVector sensorLocation = calculateSensorLocation(location, velocity);
+
+        int column = PApplet.parseInt(constrain(sensorLocation.x / lm.getResolution(),0,lm.getCols() - 1));
+        int row = PApplet.parseInt(constrain(sensorLocation.y / lm.getResolution(),0,lm.getRows() - 1));
+
+        return lm.getFromField(column, row);
     }
 }
 public class Lighter extends Transmitter{
@@ -331,28 +619,6 @@ public abstract class Sensor {
         return new PVector(xnew, ynew);
     }
 }
-
-
-public class TemperatureSensor extends Sensor{
-
-
-    TemperatureSensor(float leftEff, float rightEff, String mountS){
-        setLeftEfficiency(leftEff);
-        setRightEfficiency(rightEff);
-        setMountedSide(mountS);
-        setOffset();
-    }
-
-    private float readEnvironmentMap(HeatMap hm, PVector location, PVector velocity){
-        PVector sensorLocation = calculateSensorLocation(location, velocity);
-
-        int column = PApplet.parseInt(constrain(sensorLocation.x / hm.getResolution(),0,hm.getCols() - 1));
-        int row = PApplet.parseInt(constrain(sensorLocation.y / hm.getResolution(),0,hm.getRows() - 1));
-
-        return hm.getFromField(column, row);
-    }
-}
-
 public class SoundMap extends EnvironmentMap {
     ArrayList<Speaker> speakers;
 
@@ -410,6 +676,24 @@ public class SoundMap extends EnvironmentMap {
         popMatrix();
     }
 }
+public class SoundSensor extends Sensor{
+
+    SoundSensor(float leftEff, float rightEff, String mountS){
+        setLeftEfficiency(leftEff);
+        setRightEfficiency(rightEff);
+        setMountedSide(mountS);
+        setOffset();
+    }
+
+    private float readEnvironmentMap(SoundMap sm, PVector location, PVector velocity){
+        PVector sensorLocation = calculateSensorLocation(location, velocity);
+
+        int column = PApplet.parseInt(constrain(sensorLocation.x / sm.getResolution(),0,sm.getCols() - 1));
+        int row = PApplet.parseInt(constrain(sensorLocation.y / sm.getResolution(),0,sm.getRows() - 1));
+
+        return sm.getFromField(column, row);
+    }
+}
 public class Speaker extends Transmitter{
     private float dB;
     
@@ -417,6 +701,25 @@ public class Speaker extends Transmitter{
         setLocation(x, y);
         setColor(0, 0, 255);
         this.dB = decibel;
+    }
+}
+public class TemperatureSensor extends Sensor{
+
+
+    TemperatureSensor(float leftEff, float rightEff, String mountS){
+        setLeftEfficiency(leftEff);
+        setRightEfficiency(rightEff);
+        setMountedSide(mountS);
+        setOffset();
+    }
+
+    private float readEnvironmentMap(HeatMap hm, PVector location, PVector velocity){
+        PVector sensorLocation = calculateSensorLocation(location, velocity);
+
+        int column = PApplet.parseInt(constrain(sensorLocation.x / hm.getResolution(),0,hm.getCols() - 1));
+        int row = PApplet.parseInt(constrain(sensorLocation.y / hm.getResolution(),0,hm.getRows() - 1));
+
+        return hm.getFromField(column, row);
     }
 }
 
@@ -457,26 +760,37 @@ public class Vehicle {
     float maximumForce;
     int size; 
     ArrayList<TemperatureSensor> tempSensors;
-    
+    ArrayList<LightSensor> lightSensors;
+    ArrayList<SoundSensor> soundSensors;
     
 
     
     Vehicle(float x, float y){
         setSize(20);
-        setMaximumSpeed(2.0f);
-        setMaximumForce(20.0f);
+        setMaximumSpeed(5.0f);
+        setMaximumForce(0.1f);
         setLeftMotor(0.0f);
         setRightMotor(0.0f);
         setInitialVelocity(new PVector(0.0f, 0.0f));
         setInitialAcceleration(new PVector(0.0f, 0.0f));
         setLocation(x, y);
         tempSensors = new ArrayList<TemperatureSensor>();
+        lightSensors = new ArrayList<LightSensor>();
+        soundSensors = new ArrayList<SoundSensor>();
     }
 
 
 
     private void addTemperatureSensor(TemperatureSensor ts){
         this.tempSensors.add(ts);
+    }
+
+    private void addLightSensor(LightSensor ls){
+        this.lightSensors.add(ls);
+    }
+
+    private void addSoundSensor(SoundSensor ss){
+        this.soundSensors.add(ss);
     }
 
     private void readTemperatureSensors(HeatMap hm){
@@ -489,34 +803,56 @@ public class Vehicle {
         }
     }
 
+    private void readLightSensors(LightMap lm){
+        float value = 0.0f;
+        for (LightSensor ls : lightSensors){
+            value = ls.readEnvironmentMap(lm, this.location, this.velocity);
+            updateLeftMotor(ls.getLeftEfficiency() * value);
+            updateRightMotor(ls.getRightEfficiency() * value);
+            value = 0.0f;
+        }
+    }
+
+    private void readSoundSensors(SoundMap sm){
+        float value = 0.0f;
+        for (SoundSensor ss : soundSensors){
+            value = ss.readEnvironmentMap(sm, this.location, this.velocity);
+            updateLeftMotor(ss.getLeftEfficiency() * value);
+            updateRightMotor(ss.getRightEfficiency() * value);
+            value = 0.0f;
+        }
+    }
+
+
+
 
     public PVector generateTargetFromMotors()
     {
         float rm = this.rightMotor;
         float lm = this.leftMotor;
 
-        if (lm == rm){
-            return new PVector(100, 100);
+
+        if (rm < 0.0f){
+            rm = 0.0f;
         }
-
-        float radiusToCenter = (this.size / 2) * (lm + rm) / (lm - rm);
-
+        if (lm < 0.0f){
+            lm = 0.0f;
+        }
+        float degreesToTurn = 0.0f;
         float d = lm + rm ;
 
-        // float ratio = 0;
-        // if (lm > rm){
-        //     ratio = 1 - rm / lm; 
-        // } else if (lm < rm){
-        //     ratio = 1 - lm / rm
-        // }
+        if (lm != rm){
+            float radiusToCenter = (this.size / 2) * (lm + rm) / (lm - rm);
+            degreesToTurn = (20.0f * 360.0f) / (2.0f * (float)Math.PI * radiusToCenter);
 
-        float degreesToTurn = (20.0f * 360.0f) / (2.0f * (float)Math.PI * radiusToCenter);
-
-        if (degreesToTurn > 60.0f){
-            degreesToTurn = 60.0f;
-        } else if ( degreesToTurn < -60.0f) {
-            degreesToTurn = -60.0f;
+            if (degreesToTurn > 60.0f){
+                degreesToTurn = 60.0f;
+            } else if ( degreesToTurn < -60.0f) {
+                degreesToTurn = -60.0f;
+            }
         }
+
+        
 
         float angle = (degreesToTurn * PI/180);
         float newX = (d/2) * cos(angle);
@@ -585,15 +921,19 @@ public class Vehicle {
         this.rightMotor = 0.0f;
     }
 
-    private void steer(HeatMap hm){
-        readTemperatureSensors(hm);
-        println(this.leftMotor);
-        println(this.rightMotor);
+    private void steer(HeatMap hm, LightMap lm, SoundMap sm){
+        readSensors(hm, lm, sm);
         PVector target = calculateTargetVector();
         PVector desiredVelocity = calculateDesiredVelocity(target);
         PVector steeringForce = calculateSteeringForce(desiredVelocity);
         applyForce(steeringForce);
         update();
+    }
+
+    private void readSensors(HeatMap hm, LightMap lm, SoundMap sm){
+        readTemperatureSensors(hm);
+        readLightSensors(lm);
+        readSoundSensors(sm);
     }
 
 
@@ -703,9 +1043,9 @@ public class Vehicle {
         this.acceleration = ia;
     }
 }
-  public void settings() {  size(1000, 1000);  smooth(); }
+  public void settings() {  size(1300, 1000);  smooth(); }
   static public void main(String[] passedArgs) {
-    String[] appletArgs = new String[] { "Simulator2DForBraitenbergVehicles" };
+    String[] appletArgs = new String[] { "--present", "--window-color=#666666", "--stop-color=#cccccc", "Simulator2DForBraitenbergVehicles" };
     if (passedArgs != null) {
       PApplet.main(concat(appletArgs, passedArgs));
     } else {
